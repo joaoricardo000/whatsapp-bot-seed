@@ -1,0 +1,15 @@
+Pillow==2.9.0
+argparse==1.2.1
+gevent==1.0.2
+greenlet==0.4.7
+grequests==0.2.0
+protobuf==3.0.0-alpha-1
+pycrypto==2.6.1
+python-axolotl==0.1.7
+python-axolotl-curve25519==0.1
+python-dateutil==2.4.2
+pytube==0.2.1
+requests==2.7.0
+six==1.9.0
+wsgiref==0.1.2
+yowsup2==2.3.185

@@ -10,7 +10,7 @@
     Then whatsapp will send a key via sms to the phone.
     Get that key then run:
 
-    > yowsup-cli registration -C 55 -R <sms-key> -p 554898603087
+    > yowsup-cli registration -C 55 -R <sms-key> -p 554899998888
 
     status: ok
     kind: free

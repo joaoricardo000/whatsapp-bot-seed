@@ -8,7 +8,7 @@ A small python seed to create a Whatsapp Bot, with regex-callback routes (just l
   
   
 - Group administration:  
-![Example](http://i.imgur.com/BeirEZz.jpg?2)
+![Example](http://i.imgur.com/pSDCWDb.png?1)
 
 # Installation
 1. Install the image handling system dependencies on ```/opt/system-requirements.sh```

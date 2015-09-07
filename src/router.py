@@ -10,8 +10,9 @@ from yowsup.layers.interface import YowInterfaceLayer, ProtocolEntityCallback
 import threading
 import re
 
-from views import views
-from views.downloads import ViewsMedia
+from views import basic_views
+from views.downloads import MediaViews
+from views.group_admin import GroupAdminViews
 
 
 class RouteLayer(YowInterfaceLayer):
@@ -25,10 +26,11 @@ class RouteLayer(YowInterfaceLayer):
         """
         super(RouteLayer, self).__init__()
 
-        views_media_download = ViewsMedia(self)
-        routes = [("^/ping", views.ping),
-                  ("^/eco\s(?P<eco_message>[^$]+)", views.echo),
-                  ] + views_media_download.routes  # Adds the auto download media routes
+        routes = [("^/ping", basic_views.ping),
+                  ("^/eco\s(?P<eco_message>[^$]+)", basic_views.echo), ]
+        routes.extend(MediaViews(self).routes)  # Adds the auto download media routes
+        routes.extend(GroupAdminViews(self).routes)
+
         self.views = [(re.compile(pattern), callback) for pattern, callback in routes]
 
     @ProtocolEntityCallback("message")

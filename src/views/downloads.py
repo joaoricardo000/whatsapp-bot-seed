@@ -6,7 +6,7 @@
 from utils.media_downloader import ImageSender, VideoSender, YoutubeSender
 
 
-class ViewsMedia():
+class MediaViews():
     def __init__(self, interface_layer):
         """
             Creates the regex routes and callbacks to handle media messages

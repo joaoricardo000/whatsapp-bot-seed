@@ -30,3 +30,17 @@ auth = ("XXX login XXX", "XXXXXXXXXXXXXXX pw XXXXXXXXXXXXXXX")
 
 # Path to download the media requests
 media_storage_path = "/tmp/"
+
+
+# Logging settings
+import logging
+
+log_format = '_%(filename)s_\t[%(levelname)s][%(asctime)-15s] %(message)s'
+logging_level = logging.DEBUG
+
+
+#  - Base location code
+#  for auto-complete phone numbers without it on group_admin views
+#  ex.: 55 - Brazil code
+#       48 - State code
+BASE_LOCATIONCODE = "5548"

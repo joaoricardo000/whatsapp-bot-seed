@@ -4,6 +4,7 @@
     The Media Sender Superclass handles the download, upload to whataspp server and delivery to the receipt
     The subclasses VideoSender, ImageSender and YoutubeSender extends it to configure media type.
 """
+import subprocess
 
 from yowsup.layers.protocol_media.mediauploader import MediaUploader
 from yowsup.layers.protocol_media.protocolentities.iq_requestupload import RequestUploadIqProtocolEntity
@@ -22,8 +23,9 @@ import requests
 import shutil
 import hashlib
 import re
-from pytube import YouTube
+import time
 import config
+from pytube import YouTube
 
 logger = logging.getLogger(__name__)
 
@@ -138,8 +140,22 @@ class YoutubeSender(VideoSender):
         if not os.path.isfile(file_path):
             yt = YouTube()
             yt.from_url("http://youtube.com/watch?v=" + video_id)
-            yt.filter('mp4')[0].download(file_path) # downloads the mp4 with lowest quality
+            yt.filter('mp4')[0].download(file_path)  # downloads the mp4 with lowest quality
         return file_path
 
     def _build_file_path(self, video_id):
         return ''.join([self.storage_path, video_id, ".mp4"])
+
+
+class UrlPrintSender(ImageSender):
+    def _download_file(self, page_url):
+        file_path = self._build_file_path(page_url)
+        if not os.path.isfile(file_path):
+            cmd = "wkhtmltoimage --load-error-handling ignore --height 1500 %s %s" % (page_url, file_path)
+            p = subprocess.Popen(cmd, shell=True)
+            p.wait()
+        return file_path
+
+    def _build_file_path(self, page_url):
+        id = hashlib.md5(page_url).hexdigest()
+        return ''.join([self.storage_path, id, time.strftime("%d_%m_%H_%M"), ".jpeg"])

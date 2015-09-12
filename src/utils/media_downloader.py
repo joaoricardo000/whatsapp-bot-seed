@@ -1,7 +1,7 @@
 """
     The Media Downloader Utilities
 
-    The Media Sender Superclass handles the download, upload to whataspp server and delivery to the receipt
+    The Media Sender Superclass handles the download, upload to whatsapp server and delivery to the receipt
     The subclasses VideoSender, ImageSender and YoutubeSender extends it to configure media type.
 """
 import subprocess
@@ -14,6 +14,8 @@ from yowsup.layers.protocol_media.protocolentities.message_media_downloadable_im
     ImageDownloadableMediaMessageProtocolEntity
 from yowsup.layers.protocol_media.protocolentities.message_media_downloadable_video import \
     VideoDownloadableMediaMessageProtocolEntity
+from yowsup.layers.protocol_media.protocolentities.message_media_downloadable_audio import \
+    AudioDownloadableMediaMessageProtocolEntity
 from yowsup.layers.protocol_messages.protocolentities import TextMessageProtocolEntity
 
 import sys
@@ -26,15 +28,15 @@ import re
 import time
 import config
 from pytube import YouTube
+from gtts import gTTS
 
 logger = logging.getLogger(__name__)
 
 
 class MediaSender():
     """
-        This class has two main public methods:
-        send_by_url and send_by_path.
-        As the name says, they send a media file by url, or path.
+        This is a superclass that does the job of download/upload a media type.
+        The classes bellow extends it and are used by the views.
     """
 
     def __init__(self, interface_layer, storage_path=config.media_storage_path):
@@ -104,6 +106,8 @@ class MediaSender():
             entity = VideoDownloadableMediaMessageProtocolEntity.fromFilePath(media_path, url, self.MEDIA_TYPE, ip, to)
         elif self.MEDIA_TYPE == DownloadableMediaMessageProtocolEntity.MEDIA_TYPE_IMAGE:
             entity = ImageDownloadableMediaMessageProtocolEntity.fromFilePath(media_path, url, ip, to, caption=caption)
+        elif self.MEDIA_TYPE == DownloadableMediaMessageProtocolEntity.MEDIA_TYPE_AUDIO:
+            entity = AudioDownloadableMediaMessageProtocolEntity.fromFilePath(media_path, url, ip, to)
         self.interface_layer.toLower(entity)
 
     def _on_upload_progress(self, filePath, jid, url, progress):
@@ -135,6 +139,9 @@ class ImageSender(MediaSender):
 
 
 class YoutubeSender(VideoSender):
+    """
+        Uses pytube to download youtube videos
+    """
     def _download_file(self, video_id):
         file_path = self._build_file_path(video_id)
         if not os.path.isfile(file_path):
@@ -148,6 +155,9 @@ class YoutubeSender(VideoSender):
 
 
 class UrlPrintSender(ImageSender):
+    """
+        Uses wkhtmltoimage to printscreen a webpage
+    """
     def _download_file(self, page_url):
         file_path = self._build_file_path(page_url)
         if not os.path.isfile(file_path):
@@ -159,3 +169,34 @@ class UrlPrintSender(ImageSender):
     def _build_file_path(self, page_url):
         id = hashlib.md5(page_url).hexdigest()
         return ''.join([self.storage_path, id, time.strftime("%d_%m_%H_%M"), ".jpeg"])
+
+
+class GoogleTtsSender(MediaSender):
+    """
+        Uses gTTS to use google text to speak
+    """
+    def __init__(self, interface_layer):
+        MediaSender.__init__(self, interface_layer)
+        self.MEDIA_TYPE = RequestUploadIqProtocolEntity.MEDIA_TYPE_AUDIO
+
+    def send(self, jid, text, lang=None):
+        if not (lang and lang in gTTS.LANGUAGES):
+            lang = "en"
+        try:
+            self.interface_layer.toLower(TextMessageProtocolEntity("{ Recording... }", to=jid))
+            file_path = self.tts_record(text, lang)
+            self.send_by_path(jid, file_path)
+        except Exception as e:
+            logging.exception(e)
+            self._on_error(jid)
+
+    def tts_record(self, text, lang):
+        file_path = self._build_file_path(text)
+        if not os.path.isfile(file_path):
+            tts = gTTS(text=text, lang=lang)
+            tts.save(file_path)
+        return file_path
+
+    def _build_file_path(self, text):
+        id = hashlib.md5(text).hexdigest()
+        return ''.join([self.storage_path, id, ".mp3"])

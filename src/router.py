@@ -11,7 +11,7 @@ import threading
 import re
 
 from views import basic_views
-from views.downloads import MediaViews
+from views.media import MediaViews
 from views.group_admin import GroupAdminViews
 
 
@@ -29,7 +29,7 @@ class RouteLayer(YowInterfaceLayer):
         routes = [("^/ping", basic_views.ping),
                   ("^/eco\s(?P<eco_message>[^$]+)", basic_views.echo), ]
         routes.extend(MediaViews(self).routes)  # Adds the auto download media routes
-        routes.extend(GroupAdminViews(self).routes)
+        routes.extend(GroupAdminViews(self).routes) # Adds group admin features
 
         self.views = [(re.compile(pattern), callback) for pattern, callback in routes]
 

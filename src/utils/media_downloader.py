@@ -161,7 +161,7 @@ class UrlPrintSender(ImageSender):
     def _download_file(self, page_url):
         file_path = self._build_file_path(page_url)
         if not os.path.isfile(file_path):
-            cmd = "wkhtmltoimage --load-error-handling ignore --height 1500 %s %s" % (page_url, file_path)
+            cmd = 'wkhtmltoimage --load-error-handling ignore --height 1500 "%s" %s' % (page_url, file_path)
             p = subprocess.Popen(cmd, shell=True)
             p.wait()
         return file_path

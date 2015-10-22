@@ -1,6 +1,6 @@
 # whatsapp-bot-seed
 A small python seed to create a Whatsapp Bot, with regex-callback routes (just like a web framework).  
-(pratical extension of the examples on https://github.com/tgalal/yowsup)
+(practical extension of the examples on https://github.com/tgalal/yowsup)
 
 # What it does?
 - Basic messages and media download:  

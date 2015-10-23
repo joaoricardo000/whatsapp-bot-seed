@@ -16,6 +16,10 @@ import threading
 import re
 import logging
 
+# Basic regex routes
+routes = [("^/ping", basic_views.ping),
+          ("^/e(cho)?\s(?P<echo_message>[^$]+)$", basic_views.echo)]
+
 
 class RouteLayer(YowInterfaceLayer):
     def __init__(self):
@@ -27,9 +31,6 @@ class RouteLayer(YowInterfaceLayer):
             so the callback can access the 'self.toLower' method
         """
         super(RouteLayer, self).__init__()
-
-        routes = [("^/ping", basic_views.ping),
-                  ("^/e(cho)?\s(?P<echo_message>[^$]+)$", basic_views.echo)]
 
         # Google views to handle tts, search and youtube
         routes.extend(GoogleViews(self).routes)

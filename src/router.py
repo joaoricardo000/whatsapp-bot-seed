@@ -42,7 +42,7 @@ class RouteLayer(YowInterfaceLayer):
         routes.extend(SuperViews(self).routes)
 
         # group admin views disabled by default.
-        # read the issue on:
+        # read the issue on: https://github.com/joaoricardo000/whatsapp-bot-seed/issues/4
         # enable on your own risk!
         # routes.extend(GroupAdminViews(self).routes)
 

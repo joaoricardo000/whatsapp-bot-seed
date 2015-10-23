@@ -1,11 +1,9 @@
 """
-    The Media Downloader Utilities
+    The Media Sender Utilities
 
-    The Media Sender Superclass handles the download, upload to whatsapp server and delivery to the receipt
+    The MediaSender superclass handles the download, upload to whatsapp server and delivery to the receipt
     The subclasses VideoSender, ImageSender and YoutubeSender extends it to configure media type.
 """
-import subprocess
-
 from yowsup.layers.protocol_media.mediauploader import MediaUploader
 from yowsup.layers.protocol_media.protocolentities.iq_requestupload import RequestUploadIqProtocolEntity
 from yowsup.layers.protocol_media.protocolentities.message_media_downloadable import \
@@ -18,19 +16,17 @@ from yowsup.layers.protocol_media.protocolentities.message_media_downloadable_au
     AudioDownloadableMediaMessageProtocolEntity
 from yowsup.layers.protocol_messages.protocolentities import TextMessageProtocolEntity
 
-import sys
+import subprocess
+import time
 import os
 import logging
 import requests
 import shutil
 import hashlib
 import re
-import time
 import config
 from pytube import YouTube
 from gtts import gTTS
-
-logger = logging.getLogger(__name__)
 
 
 class MediaSender():
@@ -49,13 +45,17 @@ class MediaSender():
         self.file_extension_regex = re.compile("\.([0-9a-z]+)($|\?[^\s]*$)")
         self.MEDIA_TYPE = None
 
-    def send_by_url(self, jid, file_url):
+    def send_by_url(self, jid, file_url, caption=None):
         """ Downloads and send a file_url """
-        self.interface_layer.toLower(TextMessageProtocolEntity("{ Downloading [%s]... }" % self.MEDIA_TYPE, to=jid))
-        file_path = self._download_file(file_url)  # downloads and save locally
-        self.send_by_path(jid, file_path)
+        try:
+            self.interface_layer.toLower(TextMessageProtocolEntity("{...}", to=jid))
+            file_path = self._download_file(file_url)
+            self.send_by_path(jid, file_path, caption)
+        except Exception as e:
+            logging.exception(e)
+            self._on_error(jid)
 
-    def send_by_path(self, jid, path):
+    def send_by_path(self, jid, path, caption=None):
         """
             Send a file by its absolute path.
 
@@ -63,10 +63,9 @@ class MediaSender():
             Then calls the _on_upload_result.
         """
         entity = RequestUploadIqProtocolEntity(self.MEDIA_TYPE, filePath=path)
-        success_callback = lambda upload_result, request_entity: self._on_upload_request_result(jid, path,
-                                                                                                upload_result,
-                                                                                                request_entity)
-        err_callback = lambda error_result, request_entity: self._on_error(jid)
+        success_callback = lambda successEntity, originalEntity: self._on_upload_result(jid, path, successEntity,
+                                                                                        originalEntity, caption)
+        err_callback = lambda errorEntity, originalEntity: self._on_error(jid)
         self.interface_layer._sendIq(entity, success_callback, err_callback)
 
     def _download_file(self, file_url):
@@ -82,41 +81,41 @@ class MediaSender():
             del response
         return file_path
 
-    def _on_upload_request_result(self, jid, file_path, upload_result, request_entity):
+    def _on_upload_result(self, jid, file_path, upload_result, requestUploadIqProtocolEntity, caption=None):
         """
             If the file has never been uploaded, will be uploaded and then call the _do_send_file
         """
         if upload_result.isDuplicate():
-            self._do_send_file(file_path, upload_result.getUrl(), jid, upload_result.getIp())
+            self._do_send_file(file_path, upload_result.getUrl(), jid, upload_result.getIp(), caption)
         else:
-            callback = lambda media_path, jid, url: self._do_send_file(media_path, url, jid, upload_result.getIp())
+            callback = lambda file_path, jid, url: self._do_send_file(file_path, url, jid, upload_result.getIp(),
+                                                                      caption)
             mediaUploader = MediaUploader(jid, self.interface_layer.getOwnJid(), file_path,
                                           upload_result.getUrl(),
                                           upload_result.getResumeOffset(),
                                           callback, self._on_error, self._on_upload_progress, async=True)
             mediaUploader.start()
 
-    def _do_send_file(self, media_path, url, to, ip=None, caption=None):
+    def _do_send_file(self, file_path, url, to, ip=None, caption=None):
         """
             Now the media file has been uploaded and the whatsapp server returns a media_path.
             The media_path is then sent to the receipt.
         """
         entity = None
         if self.MEDIA_TYPE == DownloadableMediaMessageProtocolEntity.MEDIA_TYPE_VIDEO:
-            entity = VideoDownloadableMediaMessageProtocolEntity.fromFilePath(media_path, url, self.MEDIA_TYPE, ip, to)
+            entity = VideoDownloadableMediaMessageProtocolEntity.fromFilePath(file_path, url, self.MEDIA_TYPE, ip, to)
         elif self.MEDIA_TYPE == DownloadableMediaMessageProtocolEntity.MEDIA_TYPE_IMAGE:
-            entity = ImageDownloadableMediaMessageProtocolEntity.fromFilePath(media_path, url, ip, to, caption=caption)
+            entity = ImageDownloadableMediaMessageProtocolEntity.fromFilePath(file_path, url, ip, to, caption=caption)
         elif self.MEDIA_TYPE == DownloadableMediaMessageProtocolEntity.MEDIA_TYPE_AUDIO:
-            entity = AudioDownloadableMediaMessageProtocolEntity.fromFilePath(media_path, url, ip, to)
+            entity = AudioDownloadableMediaMessageProtocolEntity.fromFilePath(file_path, url, ip, to)
         self.interface_layer.toLower(entity)
 
     def _on_upload_progress(self, filePath, jid, url, progress):
-        sys.stdout.write("%s => %s, %d%% \r" % (os.path.basename(filePath), jid, progress))
-        sys.stdout.flush()
+        if progress % 50 == 0:
+            logging.info("[Upload progress]%s => %s, %d%% \r" % (os.path.basename(filePath), jid, progress))
 
     def _on_error(self, jid, *args, **kwargs):
-        error_message = "{! Sorry, error processing request for [%s]... }" % self.MEDIA_TYPE
-        self.interface_layer.toLower(TextMessageProtocolEntity(error_message, to=jid))
+        self.interface_layer.toLower(TextMessageProtocolEntity("{!}", to=jid))
 
     def _get_file_ext(self, url):
         return self.file_extension_regex.findall(url)[0][0]
@@ -127,6 +126,12 @@ class MediaSender():
 
 
 class VideoSender(MediaSender):
+    def __init__(self, interface_layer):
+        MediaSender.__init__(self, interface_layer)
+        self.MEDIA_TYPE = RequestUploadIqProtocolEntity.MEDIA_TYPE_VIDEO
+
+
+class AudioSender(MediaSender):
     def __init__(self, interface_layer):
         MediaSender.__init__(self, interface_layer)
         self.MEDIA_TYPE = RequestUploadIqProtocolEntity.MEDIA_TYPE_VIDEO
@@ -147,7 +152,8 @@ class YoutubeSender(VideoSender):
         if not os.path.isfile(file_path):
             yt = YouTube()
             yt.from_url("http://youtube.com/watch?v=" + video_id)
-            yt.filter('mp4')[0].download(file_path)  # downloads the mp4 with lowest quality
+            video = yt.filter('mp4')[0]
+            video.download(file_path)
         return file_path
 
     def _build_file_path(self, video_id):
@@ -159,31 +165,27 @@ class UrlPrintSender(ImageSender):
         Uses wkhtmltoimage to printscreen a webpage
     """
     def _download_file(self, page_url):
+        page_url = page_url.replace('"', "'")
         file_path = self._build_file_path(page_url)
         if not os.path.isfile(file_path):
-            cmd = 'wkhtmltoimage --load-error-handling ignore --height 1500 "%s" %s' % (page_url, file_path)
+            cmd = 'wkhtmltoimage --load-error-handling ignore --height 1600 "%s" %s' % (page_url, file_path)
             p = subprocess.Popen(cmd, shell=True)
             p.wait()
         return file_path
 
     def _build_file_path(self, page_url):
         id = hashlib.md5(page_url).hexdigest()
-        return ''.join([self.storage_path, id, time.strftime("%d_%m_%H_%M"), ".jpeg"])
+        return ''.join([self.storage_path, id, str(int(time.time()))[:-2], ".jpeg"])
 
 
-class GoogleTtsSender(MediaSender):
+class GoogleTtsSender(AudioSender):
     """
         Uses gTTS to use google text to speak
     """
-    def __init__(self, interface_layer):
-        MediaSender.__init__(self, interface_layer)
-        self.MEDIA_TYPE = RequestUploadIqProtocolEntity.MEDIA_TYPE_AUDIO
-
     def send(self, jid, text, lang=None):
         if not (lang and lang in gTTS.LANGUAGES):
-            lang = "en"
+            lang = "pt-br"
         try:
-            self.interface_layer.toLower(TextMessageProtocolEntity("{ Recording... }", to=jid))
             file_path = self.tts_record(text, lang)
             self.send_by_path(jid, file_path)
         except Exception as e:

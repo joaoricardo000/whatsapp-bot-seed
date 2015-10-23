@@ -184,7 +184,7 @@ class GoogleTtsSender(AudioSender):
     """
     def send(self, jid, text, lang=None):
         if not (lang and lang in gTTS.LANGUAGES):
-            lang = "pt-br"
+            lang = "en"
         try:
             file_path = self.tts_record(text, lang)
             self.send_by_path(jid, file_path)

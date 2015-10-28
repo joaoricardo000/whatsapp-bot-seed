@@ -42,7 +42,7 @@ class MediaSender():
         """
         self.interface_layer = interface_layer
         self.storage_path = storage_path
-        self.file_extension_regex = re.compile("\.([0-9a-z]+)($|\?[^\s]*$)")
+        self.file_extension_regex = re.compile("^.*\.([0-9a-z]+)(?:[\?\/][^\s]*)?$")
         self.MEDIA_TYPE = None
 
     def send_by_url(self, jid, file_url, caption=None):
@@ -118,7 +118,7 @@ class MediaSender():
         self.interface_layer.toLower(TextMessageProtocolEntity("{!}", to=jid))
 
     def _get_file_ext(self, url):
-        return self.file_extension_regex.findall(url)[0][0]
+        return self.file_extension_regex.findall(url)[0]
 
     def _build_file_path(self, url):
         id = hashlib.md5(url).hexdigest()

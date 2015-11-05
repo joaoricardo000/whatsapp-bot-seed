@@ -26,7 +26,6 @@ class GoogleViews():
         ]
 
     def send_yt_video(self, message, match):
-        print message
         self.yt_sender.send_by_url(jid=message.getFrom(), file_url=match.group("video_id"))
 
     def send_tts(self, message, match):

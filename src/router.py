@@ -3,7 +3,9 @@
     Here the message is routed to its proper view.
     The routes are defined with regular expressions and callback functions (just like any web framework).
 """
-from views.google import GoogleViews
+import threading
+import re
+import logging
 
 from yowsup.layers.interface import YowInterfaceLayer, ProtocolEntityCallback
 
@@ -11,10 +13,8 @@ from views import basic_views
 from views.media import MediaViews
 from views.super_views import SuperViews
 from views.group_admin import GroupAdminViews
+from views.google import GoogleViews
 
-import threading
-import re
-import logging
 
 # Basic regex routes
 routes = [("^/ping", basic_views.ping),

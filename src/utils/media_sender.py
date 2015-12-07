@@ -48,7 +48,7 @@ class MediaSender():
     def send_by_url(self, jid, file_url, caption=None):
         """ Downloads and send a file_url """
         try:
-            self.interface_layer.toLower(TextMessageProtocolEntity("{...}", to=jid))
+            # self.interface_layer.toLower(TextMessageProtocolEntity("{...}", to=jid))
             file_path = self._download_file(file_url)
             self.send_by_path(jid, file_path, caption)
         except Exception as e:
@@ -147,6 +147,7 @@ class YoutubeSender(VideoSender):
     """
         Uses pytube to download youtube videos
     """
+
     def _download_file(self, video_id):
         file_path = self._build_file_path(video_id)
         if not os.path.isfile(file_path):
@@ -164,24 +165,27 @@ class UrlPrintSender(ImageSender):
     """
         Uses wkhtmltoimage to printscreen a webpage
     """
+
     def _download_file(self, page_url):
         page_url = page_url.replace('"', "'")
         file_path = self._build_file_path(page_url)
+        file_name = os.path.splitext(os.path.basename(file_path))[0]
         if not os.path.isfile(file_path):
-            cmd = 'wkhtmltoimage --load-error-handling ignore --height 1600 "%s" %s' % (page_url, file_path)
-            p = subprocess.Popen(cmd, shell=True)
+            cmd = 'pageres "%s" 1024x2300 --crop  --filename=%s' % (page_url, file_name)
+            p = subprocess.Popen(cmd, shell=True, cwd=self.storage_path)
             p.wait()
         return file_path
 
     def _build_file_path(self, page_url):
         id = hashlib.md5(page_url).hexdigest()
-        return ''.join([self.storage_path, id, str(int(time.time()))[:-2], ".jpeg"])
+        return ''.join([self.storage_path, id, str(int(time.time()))[:-2], ".png"])
 
 
 class GoogleTtsSender(AudioSender):
     """
         Uses gTTS to use google text to speak
     """
+
     def send(self, jid, text, lang=None):
         if not (lang and lang in gTTS.LANGUAGES):
             lang = "en"

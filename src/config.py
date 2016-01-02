@@ -35,6 +35,9 @@ auth = ("XXXXXXXXXXXX", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 filter_groups = False
 admins = ["XXXXXXXXXXXX", ]
 
+#Bing API for image search
+bing_api = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
 # Path to download the media requests
 # (audio recordings, printscreens, media and youtube videos)
 media_storage_path = "/tmp/"

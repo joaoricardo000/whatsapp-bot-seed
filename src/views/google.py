@@ -22,7 +22,7 @@ class GoogleViews():
              self.send_yt_video),
             ("/t(ts)?\s(?P<text>[^\[]{1,500})\s?\[?(?P<lang>[A-Za-z\-]{2,6})?\]?$", self.send_tts),
             ("/s(earch)?\s(?P<term>[^$]+)$", self.google_search),
-            ("/i(mage)?\s(?P<term>[^$]+)$", self.google_image_search)
+            #("/i(mage)?\s(?P<term>[^$]+)$", self.google_image_search)
         ]
 
     def send_yt_video(self, message, match):

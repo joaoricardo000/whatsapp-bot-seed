@@ -8,7 +8,7 @@ import re
 import logging
 
 from yowsup.layers.interface import YowInterfaceLayer, ProtocolEntityCallback
-from yowsup.layers.protocol_messages.protocolentities.message_text import TextMessageProtocolEntity
+
 from views import basic_views
 from views.media import MediaViews
 from views.super_views import SuperViews
@@ -53,14 +53,9 @@ class RouteLayer(YowInterfaceLayer):
         text = message.getBody()
         for route, callback in self.views:
             match = route.match(text)
-            if match:
+            if match:  # in case of regex match, the callback is called, passing the message and the match object
                 threading.Thread(target=self.handle_callback, args=(callback, message, match)).start()
-                return
-        if text.startswith("/"):
-            threading.Thread(target=self.notfound, args=(text, message)).start()
-        
-    def notfound(self, command, message):
-        self.toLower(TextMessageProtocolEntity("Command \"" + command + "\" not found or invalid syntax\nType /help for the command list", to=message.getFrom()))
+                break
 
     def handle_callback(self, callback, message, match):
         try:

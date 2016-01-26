@@ -19,7 +19,7 @@ class GoogleViews():
             (".*https?:\/\/(?:www\.|m\.)?youtu(?:be.com\/watch\?v=|\.be/)(?P<video_id>[\w-]+)(&\S*)?$",
              self.send_yt_video),
             ("/s(earch)?\s(?P<term>[^$]+)$", self.google_search),
-            ("/i(mage)?\s(?P<term>[^$]+)$", self.google_image_search)
+            #("/i(mage)?\s(?P<term>[^$]+)$", self.google_image_search)
         ]
 
     def send_yt_video(self, message, match):

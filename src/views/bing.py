@@ -3,7 +3,7 @@
     /i(mage) <term>
 
 """
-from utils.media_sender import ImageSender, VideoSender, YoutubeSender, UrlPrintSender, GoogleTtsSender
+from utils.media_sender import ImageSender
 import requests, urllib
 import config
 

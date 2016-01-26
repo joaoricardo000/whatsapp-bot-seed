@@ -19,7 +19,6 @@ class GoogleViews():
             (".*https?:\/\/(?:www\.|m\.)?youtu(?:be.com\/watch\?v=|\.be/)(?P<video_id>[\w-]+)(&\S*)?$",
              self.send_yt_video),
             ("/s(earch)?\s(?P<term>[^$]+)$", self.google_search),
-            #("/i(mage)?\s(?P<term>[^$]+)$", self.google_image_search)
         ]
 
     def send_yt_video(self, message, match):
@@ -29,8 +28,3 @@ class GoogleViews():
         req = requests.get("http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=%s" % match.group("term"))
         page_url = urllib.unquote(req.json()["responseData"]["results"][0]["url"])
         self.url_print_sender.send_by_url(jid=message.getFrom(), file_url=page_url)
-
-    def google_image_search(self, message, match):
-        req = requests.get("http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=%s" % match.group("term"))
-        image_url = urllib.unquote(req.json()["responseData"]["results"][0]["url"])
-        self.image_sender.send_by_url(jid=message.getFrom(), file_url=image_url)

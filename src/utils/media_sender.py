@@ -26,7 +26,6 @@ import hashlib
 import re
 import config
 from pytube import YouTube
-from gtts import gTTS
 
 
 class MediaSender():
@@ -181,14 +180,13 @@ class UrlPrintSender(ImageSender):
         return ''.join([self.storage_path, id, str(int(time.time()))[:-2], ".png"])
 
 
-class GoogleTtsSender(AudioSender):
+class EspeakTtsSender(AudioSender):
     """
-        Uses gTTS to use google text to speak
+        Uses espeak to text to speach
     """
 
-    def send(self, jid, text, lang=None):
-        if not (lang and lang in gTTS.LANGUAGES):
-            lang = "en"
+    def send(self, jid, text, lang='en'):
+        text = text.replace("'", '"')
         try:
             file_path = self.tts_record(text, lang)
             self.send_by_path(jid, file_path)
@@ -196,13 +194,12 @@ class GoogleTtsSender(AudioSender):
             logging.exception(e)
             self._on_error(jid)
 
-    def tts_record(self, text, lang):
+    def tts_record(self, text, lang='en'):
         file_path = self._build_file_path(text)
-        if not os.path.isfile(file_path):
-            tts = gTTS(text=text, lang=lang)
-            tts.save(file_path)
+        cmd = "espeak -v%s -w %s '%s'" % (lang, file_path, text)
+        subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).wait()
         return file_path
 
     def _build_file_path(self, text):
         id = hashlib.md5(text).hexdigest()
-        return ''.join([self.storage_path, id, ".mp3"])
+        return ''.join([self.storage_path, id, ".wav"])

@@ -6,7 +6,7 @@
 
     The top layer of the stack is the RouteLayer (from route.py).
 """
-import logging, time, os
+import logging, time, os, sys
 from yowsup.layers import YowLayerEvent, YowParallelLayer
 from yowsup.layers.auth import AuthError
 from yowsup.layers.network import YowNetworkLayer

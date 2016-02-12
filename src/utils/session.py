@@ -4,7 +4,7 @@ import shelve
 class SessionDB:
     """
         In real world applications, choosing a very efficient way to store
-        sessions on databases is excessial. Here it's ok.
+        sessions on databases is essential. Here it's ok.
         Shelve is pure simple python to create a disk persistent map.
         https://docs.python.org/2/library/shelve.html#example
     """

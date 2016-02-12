@@ -15,6 +15,7 @@ from views.super_views import SuperViews
 from views.group_admin import GroupAdminViews
 from views.google import GoogleViews
 from views.bing import BingViews
+from views.quiz import QuizView
 
 
 # Basic regex routes
@@ -35,7 +36,7 @@ class RouteLayer(YowInterfaceLayer):
 
         # Google views to handle tts, search and youtube
         routes.extend(GoogleViews(self).routes)
-        
+
         # Bing views to handle image search
         routes.extend(BingViews(self).routes)
 
@@ -44,6 +45,9 @@ class RouteLayer(YowInterfaceLayer):
 
         # adds super fun views
         routes.extend(SuperViews(self).routes)
+
+        # adds quiz views
+        routes.extend(QuizView(self).routes)
 
         # group admin views disabled by default.
         # read the issue on: https://github.com/joaoricardo000/whatsapp-bot-seed/issues/4

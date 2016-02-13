@@ -23,7 +23,7 @@ class QuizView:
         # Gets a random quiz and store in the sender' session
         quiz = self._get_quiz()
         self.session_db.set(message.getFrom(), quiz)
-        self.interface_layer.toLower(TextMessageProtocolEntity(self._get_quiz_text(quiz), to=message.getFrom()))
+        return TextMessageProtocolEntity(self._get_quiz_text(quiz), to=message.getFrom())
 
     def quiz_answer(self, message, match):
         # if there is a quiz stored on the sender' session, this is an answer, otherwise ignore it

@@ -35,12 +35,14 @@ and a bit more...
 4. Then just run the server with  ```python src/server.py```  
 
 # Or with Docker!
-1. $ git clone https://github.com/joaoricardo000/whatsapp-bot-seed/
-2. Edit Dockerfile to include your credentials
-3. $ docker build -t whatsapp-bot .
-4. $ docker run -p 0.0.0.0:9005:9005 whatsapp-bot
+$ git clone https://github.com/joaoricardo000/whatsapp-bot-seed/  
+$ cd whatsapp-bot-seed  
+*(Edit Dockerfile to include your credentials)*  
+$ docker build -t whatsapp-bot .  
+$ docker run -p 0.0.0.0:9005:9005 whatsapp-bot  
+
 The server will be running. Access http://localhost:9005 (default: admin:password) for process controll and logs.
 
 
-To create your own views, check the ```src/router.py```, and the ```src/view/basic_views.py``` for a simple example.
+#### To create your own views, check out ```src/router.py``` and ```src/view/basic_views.py``` for examples.
 

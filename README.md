@@ -3,7 +3,7 @@ A small python seed to create a Whatsapp Bot, with regex-callback routes (just l
 (practical extension of the examples on https://github.com/tgalal/yowsup)
 
 # :warning: Warning :warning:
-Unfortunately after some updates in the whatsapp servers bots are beeing banned real quickly. Some just last a couple hours.  
+Unfortunately, after some updates in the whatsapp servers, bots are beeing banned real quickly. Some just last a couple hours.  
 Whatsapp does not have an open protocol, so [yowsup](https://github.com/tgalal/yowsup/issues) -- the core implementation behind this seed -- relies on reverse engineering to understand the messages exchange. Right now [there is a lot of issues with this implementation](https://github.com/tgalal/yowsup/issues).  
 This project had a good run, was really useful and bots prior to the server update could run for months without any trouble. Right now is very unstable and unreliable due the ban problem.  
 If a new library/protocol update solves this issue, the work will return. Until then, sadly, the project will be on hold.
